@@ -1,0 +1,23 @@
+sorteo:
+  probabilidad_rojo: 30
+
+email:
+  smtp_host: smtp-relay.brevo.com
+  smtp_port: 587
+  smtp_user: a86ed1001@smtp-brevo.com
+  smtp_password: ""
+  remitente: "Leandro Lion <lelion13@gmail.com>"
+  destinatarios:
+    - llion@cpmgsa.ar
+    - llion@cpmgsa.com.ar
+
+empresa:
+  nombre: "Clinica Monte Grande"
+  logo_url: "https://clinicamg.com.ar/wp-content/uploads/2025/12/logos-home2-cmg.png"
+
+fotos:
+  directorio: "./fotos"
+
+email_reintentos:
+  intervalo_minutos: 5
+  max_intentos: 5

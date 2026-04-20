@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/api/client.ts","./src/components/errorcamara.tsx","./src/components/formulariodatos.tsx","./src/components/idlescreen.tsx","./src/components/resultadorojo.tsx","./src/components/resultadoverde.tsx","./src/hooks/usecamera.ts","./src/hooks/usesorteo.ts"],"version":"5.9.3"}

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+backend/.env
+frontend/.env
+frontend/certs/
+backend/fotos/
+node_modules/
+frontend/dist/
+.DS_Store

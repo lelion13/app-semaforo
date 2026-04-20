@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+alembic
+python-dotenv
+pyyaml
+pydantic
+apscheduler
+fastapi-mail
+greenlet
