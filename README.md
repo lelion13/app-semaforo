@@ -59,13 +59,13 @@ API_KEY=clave-secreta-minimo-32-caracteres
 EMAIL_PASSWORD=password-smtp
 
 # Lista separada por comas. En produccion usar dominio publico real.
-FRONTEND_URLS=https://control.tudominio.com
+FRONTEND_URLS=https://control.lionapp.cloud
 
 ```
 
 
 
-Compatibilidad: si solo definis `FRONTEND_URL=https://control.cpmgsa.com.ar`, CORS usa un único origen (comportamiento anterior).
+Compatibilidad: si solo definis `FRONTEND_URL=https://control.lionapp.cloud`, CORS usa un único origen (comportamiento anterior).
 
 
 
@@ -81,7 +81,7 @@ Compatibilidad: si solo definis `FRONTEND_URL=https://control.cpmgsa.com.ar`, CO
 
 ```env
 
-VITE_API_URL=https://control.tudominio.com
+VITE_API_URL=https://control.lionapp.cloud
 
 VITE_API_KEY=clave-secreta-minimo-32-caracteres
 
@@ -139,7 +139,7 @@ docker compose up -d --build
 
 Servicios:
 
-- Frontend: interno en Docker, publicado por Traefik via `Host(control.tudominio.com)`.
+- Frontend: interno en Docker, publicado por Traefik via `Host(control.lionapp.cloud)`.
 - Backend: interno en Docker (`backend:8000`), accesible por `/api` desde frontend.
 - DB: interna en Docker (`db:5432`), sin exposicion publica.
 
@@ -148,13 +148,13 @@ Servicios:
 Prerequisitos:
 
 1. Traefik levantado (como servicio independiente) con Docker provider y resolver `letsencrypt`.
-2. DNS `A` record de `control.tudominio.com` apuntando al VPS.
+2. DNS `A` record de `control.lionapp.cloud` apuntando al VPS.
 3. Puertos 80 y 443 abiertos en firewall.
 
 Pasos de despliegue:
 
 1. Clonar proyecto en VPS y crear `backend/.env` y `frontend/.env` desde los `.env.example`.
-2. Reemplazar `control.tudominio.com` por tu dominio real en:
+2. Verificar que `control.lionapp.cloud` este configurado en:
    - `frontend/.env`
    - `backend/.env`
    - labels Traefik de `docker-compose.yml`
@@ -163,9 +163,9 @@ Pasos de despliegue:
 4. Ejecutar migraciones:
    - `docker compose exec backend alembic upgrade head`
 5. Verificar salud:
-   - `https://control.tudominio.com/api/health` debe responder `{"status":"ok"}`.
+   - `https://control.lionapp.cloud/api/health` debe responder `{"status":"ok"}`.
 6. Verificar certificado:
-   - abrir `https://control.tudominio.com` y confirmar TLS valido emitido por Let's Encrypt.
+   - abrir `https://control.lionapp.cloud` y confirmar TLS valido emitido por Let's Encrypt.
 
 Checklist post-deploy:
 
@@ -185,9 +185,9 @@ Checklist post-deploy:
 
    - `mkcert -install`
 
-   - `mkcert -cert-file frontend/certs/control.local.pem -key-file frontend/certs/control.local-key.pem control.cpmgsa.com.ar control.clno0026 control.local localhost 127.0.0.1`
+   - `mkcert -cert-file frontend/certs/control.local.pem -key-file frontend/certs/control.local-key.pem control.lionapp.cloud control.clno0026 control.local localhost 127.0.0.1`
 
-3. En cada cliente (PC, tablet), resolver `control.cpmgsa.com.ar` hacia la IP del servidor (archivo hosts, DNS interno o router). Opcional: mismo criterio para `control.clno0026` y `control.local` si los usás en paralelo.
+3. En cada cliente (PC, tablet), resolver `control.lionapp.cloud` hacia la IP del servidor (archivo hosts, DNS interno o router). Opcional: mismo criterio para `control.clno0026` y `control.local` si los usás en paralelo.
 
 4. Instalar y confiar la CA raiz de `mkcert` en la tablet.
 
@@ -201,7 +201,7 @@ Checklist post-deploy:
 
 
 
-- **Canónico**: `https://control.cpmgsa.com.ar` (coincide con `VITE_API_URL` y certificado SAN).
+- **Canónico**: `https://control.lionapp.cloud` (coincide con `VITE_API_URL` y certificado SAN).
 
 - **Transición**: `https://control.local` sigue sirviendo el mismo Nginx si el nombre está en `server_name` y en el certificado.
 
@@ -278,6 +278,6 @@ Para produccion segura:
 
 - Migraciones: ejecutar `alembic upgrade head` antes de iniciar API.
 
-- Nombre no resuelve: registrar `control.cpmgsa.com.ar` (y aliases opcionales) en DNS o `hosts` antes de probar.
+- Nombre no resuelve: registrar `control.lionapp.cloud` (y aliases opcionales) en DNS o `hosts` antes de probar.
 
 

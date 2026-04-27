@@ -48,7 +48,7 @@ services:
       start_period: 20s
     labels:
       - traefik.enable=true
-      - traefik.http.routers.app-semaforo.rule=Host(`control.tudominio.com`)
+      - traefik.http.routers.app-semaforo.rule=Host(`control.lionapp.cloud`)
       - traefik.http.routers.app-semaforo.entrypoints=websecure
       - traefik.http.routers.app-semaforo.tls=true
       - traefik.http.routers.app-semaforo.tls.certresolver=letsencrypt
