@@ -169,7 +169,10 @@ Prerequisitos:
 Variables obligatorias en Hostinger Project Environment:
 
 ```env
-DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/control_drogas
+POSTGRES_DB=control_drogas
+POSTGRES_USER=user
+POSTGRES_PASSWORD=definir-password-fuerte
+DATABASE_URL=postgresql+asyncpg://user:definir-password-fuerte@db:5432/control_drogas
 API_KEY=clave-secreta-minimo-32-caracteres
 EMAIL_PASSWORD=password-smtp
 FRONTEND_URLS=https://control.lionapp.cloud
@@ -180,6 +183,13 @@ VITE_EMPRESA_LOGO_URL=https://clinicamg.com.ar/wp-content/uploads/2025/08/logos-
 ```
 
 Nota: en este compose, `backend` y `frontend` toman variables desde el entorno del proyecto (no depende de `backend/.env` ni `frontend/.env` dentro del VPS al desplegar por Hostinger).
+
+Checklist rapido anti-falla de `VITE_API_URL` (antes de Deploy):
+
+1. Verificar que exista `VITE_API_URL` en Project Environment.
+2. Valor esperado en produccion: `https://control.lionapp.cloud` (sin barra final).
+3. Rebuild completo del frontend al cambiar variables (`Deploy` con build, no solo restart).
+4. Si hay pantalla en blanco, revisar logs de build del frontend y confirmar que no aparezca `Falta VITE_API_URL`.
 
 Pasos de despliegue:
 
