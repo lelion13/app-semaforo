@@ -143,6 +143,21 @@ Servicios:
 - Backend: interno en Docker (`backend:8000`), accesible por `/api` desde frontend.
 - DB: interna en Docker (`db:5432`), sin exposicion publica.
 
+## Metodo unico de deploy (GitHub -> Hostinger)
+
+Fuente de verdad:
+
+- Rama oficial de deploy: `main`.
+- El proyecto en Hostinger debe desplegar siempre desde `main`.
+- No usar ramas alternativas para produccion.
+
+Regla operativa:
+
+1. Antes de trabajar: `git pull --ff-only origin main`.
+2. Hacer cambios, commit y push a `main`.
+3. En Hostinger presionar `Desplegar`.
+4. Validar logs y ejecutar migraciones.
+
 ## Runbook VPS Hostinger + Traefik
 
 Prerequisitos:
@@ -151,13 +166,26 @@ Prerequisitos:
 2. DNS `A` record de `control.lionapp.cloud` apuntando al VPS.
 3. Puertos 80 y 443 abiertos en firewall.
 
+Variables obligatorias en Hostinger Project Environment:
+
+```env
+DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/control_drogas
+API_KEY=clave-secreta-minimo-32-caracteres
+EMAIL_PASSWORD=password-smtp
+FRONTEND_URLS=https://control.lionapp.cloud
+VITE_API_URL=https://control.lionapp.cloud
+VITE_API_KEY=clave-secreta-minimo-32-caracteres
+VITE_EMPRESA_NOMBRE=Clinica Monte Grande
+VITE_EMPRESA_LOGO_URL=https://clinicamg.com.ar/wp-content/uploads/2025/08/logos-azul.png
+```
+
+Nota: en este compose, `backend` y `frontend` toman variables desde el entorno del proyecto (no depende de `backend/.env` ni `frontend/.env` dentro del VPS al desplegar por Hostinger).
+
 Pasos de despliegue:
 
-1. Clonar proyecto en VPS y crear `backend/.env` y `frontend/.env` desde los `.env.example`.
-2. Verificar que `control.lionapp.cloud` este configurado en:
-   - `frontend/.env`
-   - `backend/.env`
-   - labels Traefik de `docker-compose.yml`
+1. Confirmar que el repo en Hostinger apunta a `main`.
+2. Confirmar variables del proyecto (lista obligatoria de arriba).
+3. Verificar labels Traefik de `docker-compose.yml` para `control.lionapp.cloud`.
 3. Construir y subir servicios:
    - `docker compose up -d --build`
 4. Ejecutar migraciones:
@@ -172,8 +200,29 @@ Checklist post-deploy:
 - [ ] `docker compose ps` sin servicios en estado restarting/unhealthy.
 - [ ] `frontend` responde por HTTPS.
 - [ ] llamadas a `/api` funcionan desde el navegador sin error CORS.
+- [ ] frontend sin error de consola `Falta VITE_API_URL`.
 - [ ] emails salen con credenciales SMTP reales.
 - [ ] volumen de `db_data` y carpeta `backend/fotos` incluidos en backup.
+
+## Rollback y troubleshooting rapido
+
+Si falla deploy:
+
+1. Revisar logs de `backend` y `frontend`.
+2. Confirmar variables de entorno en Hostinger Project.
+3. Re-ejecutar migraciones: `docker compose exec backend alembic upgrade head`.
+
+Si frontend queda en blanco:
+
+1. Verificar que `frontend/Dockerfile` tenga `ARG` + `ENV` de `VITE_*` antes de `npm run build`.
+2. Verificar en compose `frontend.build.args` con `VITE_*`.
+3. Rebuild frontend y hard refresh/incognito.
+
+Si se hizo hotfix por SSH:
+
+1. Replicar el cambio en repo local.
+2. Push a `main`.
+3. Volver a desplegar desde Hostinger para re-alinear servidor con GitHub.
 
 ## HTTPS local para tablet (mkcert, solo entornos locales/LAN)
 
