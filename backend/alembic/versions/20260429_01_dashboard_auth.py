@@ -12,10 +12,10 @@ depends_on = None
 
 
 def upgrade() -> None:
-    rol_usuario = sa.Enum("admin", "rrhh", name="rol_usuario")
-    tipo_auth_token = sa.Enum("set_password", "reset_password", name="tipo_auth_token")
-    rol_usuario.create(op.get_bind(), checkfirst=True)
-    tipo_auth_token.create(op.get_bind(), checkfirst=True)
+    rol_usuario = postgresql.ENUM("admin", "rrhh", name="rol_usuario", create_type=False)
+    tipo_auth_token = postgresql.ENUM("set_password", "reset_password", name="tipo_auth_token", create_type=False)
+    postgresql.ENUM("admin", "rrhh", name="rol_usuario").create(op.get_bind(), checkfirst=True)
+    postgresql.ENUM("set_password", "reset_password", name="tipo_auth_token").create(op.get_bind(), checkfirst=True)
 
     op.add_column(
         "registros_rojos",
