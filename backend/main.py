@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
 from middleware.api_key import ApiKeyMiddleware
+from routers.auth import router as auth_router
+from routers.dashboard import router as dashboard_router
 from routers.registro import router as registro_router
 from routers.sorteo import router as sorteo_router
 from schemas import HealthResponse
@@ -27,9 +29,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.frontend_urls,
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PATCH"],
     allow_headers=["*"],
 )
+app.include_router(auth_router)
+app.include_router(dashboard_router)
 app.include_router(sorteo_router)
 app.include_router(registro_router)
 

@@ -9,7 +9,9 @@ from config import get_settings
 
 class ApiKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if request.url.path == "/api/health":
+        if request.url.path in {"/api/health", "/api/auth/bootstrap-status", "/api/auth/bootstrap-admin", "/api/auth/login", "/api/auth/request-password-reset", "/api/auth/confirm-password"}:
+            return await call_next(request)
+        if request.url.path.startswith("/api/dashboard/") or request.url.path == "/api/auth/users":
             return await call_next(request)
 
         if request.url.path.startswith("/api/"):

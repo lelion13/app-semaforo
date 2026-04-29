@@ -33,8 +33,13 @@ En la VPS (Ubuntu), dentro del proyecto `/docker/app-semaforo`:
 3. Completar secretos reales:
    - `POSTGRES_PASSWORD`
    - `API_KEY` (32+ caracteres)
+   - `JWT_SECRET` (32+ caracteres)
    - `EMAIL_PASSWORD`
-4. Revisar `DATABASE_URL` para que use host `db` (`...@db:5432/...`).
+4. Configurar auth:
+   - `APP_BASE_URL=https://control.lionapp.cloud`
+   - `JWT_ALGORITHM=HS256`
+   - `JWT_EXPIRES_MINUTES=480`
+5. Revisar `DATABASE_URL` para que use host `db` (`...@db:5432/...`).
 
 Comandos:
 
@@ -85,7 +90,17 @@ La app ya está configurada como PWA instalable (`display: standalone`).
 
 Esto no habilita modo offline completo; la instalación es para experiencia tipo app y acceso directo.
 
-## 8) Notas de compatibilidad con Traefik
+## 8) Dashboard RRHH y usuarios
+
+- Setup inicial del primer admin: `https://control.lionapp.cloud/user`
+  - Solo funciona si no existe ningún usuario `admin`.
+- Login de gestión: `https://control.lionapp.cloud/dashboard`
+- Flujo de usuarios:
+  - Admin crea usuario (`admin` o `rrhh`) desde dashboard.
+  - El usuario recibe link de uso único por email para definir clave (vence en 60 min).
+  - Recuperación de clave también usa link de uso único.
+
+## 9) Notas de compatibilidad con Traefik
 
 - No se modifica el proyecto `traefik-wpez`.
 - Se mantienen labels actuales en `frontend`:

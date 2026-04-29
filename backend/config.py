@@ -66,6 +66,10 @@ class Settings:
     empresa: EmpresaConfig
     fotos: FotosConfig
     email_reintentos: EmailReintentosConfig
+    jwt_secret: str
+    jwt_algorithm: str
+    jwt_expires_minutes: int
+    app_base_url: str
 
 
 def _load_yaml(config_path: Path) -> dict[str, Any]:
@@ -84,6 +88,10 @@ def get_settings() -> Settings:
     database_url = os.getenv("DATABASE_URL", "")
     api_key = os.getenv("API_KEY", "")
     email_password = os.getenv("EMAIL_PASSWORD", "")
+    jwt_secret = os.getenv("JWT_SECRET", "")
+    jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256").strip() or "HS256"
+    jwt_expires_minutes = int(os.getenv("JWT_EXPIRES_MINUTES", "480"))
+    app_base_url = os.getenv("APP_BASE_URL", "").strip()
 
     if not database_url:
         raise ValueError("DATABASE_URL es requerido")
@@ -91,6 +99,14 @@ def get_settings() -> Settings:
         raise ValueError("API_KEY es requerido")
     if len(api_key) < 32:
         raise ValueError("API_KEY debe tener al menos 32 caracteres")
+    if not jwt_secret:
+        raise ValueError("JWT_SECRET es requerido")
+    if len(jwt_secret) < 32:
+        raise ValueError("JWT_SECRET debe tener al menos 32 caracteres")
+    if jwt_expires_minutes < 5:
+        raise ValueError("JWT_EXPIRES_MINUTES debe ser mayor o igual a 5")
+    if not app_base_url.startswith("https://"):
+        raise ValueError("APP_BASE_URL debe usar HTTPS")
     frontend_urls = _parse_frontend_urls()
 
     email_yaml = yaml_config.get("email", {})
@@ -142,4 +158,8 @@ def get_settings() -> Settings:
         empresa=empresa_cfg,
         fotos=fotos_cfg,
         email_reintentos=reintentos_cfg,
+        jwt_secret=jwt_secret,
+        jwt_algorithm=jwt_algorithm,
+        jwt_expires_minutes=jwt_expires_minutes,
+        app_base_url=app_base_url.rstrip("/"),
     )

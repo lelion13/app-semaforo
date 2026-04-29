@@ -10,3 +10,6 @@ pydantic
 apscheduler
 fastapi-mail
 greenlet
+bcrypt
+PyJWT
+email-validator

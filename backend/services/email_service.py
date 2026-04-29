@@ -70,3 +70,22 @@ async def send_registro_email(
         attachments=[str(attachment_path)],
     )
     await mailer.send_message(message)
+
+
+async def send_password_link_email(*, recipient: str, nombre: str, action: str, link: str) -> None:
+    mailer = _build_mailer()
+    subject = "Configuracion de acceso - Control antidrogas" if action == "set_password" else "Recuperacion de clave"
+    html = (
+        "<h3>Control antidrogas - Acceso</h3>"
+        f"<p>Hola {nombre},</p>"
+        "<p>Usa el siguiente enlace para continuar:</p>"
+        f"<p><a href=\"{link}\">{link}</a></p>"
+        "<p>Este enlace vence en 60 minutos y se puede usar una sola vez.</p>"
+    )
+    message = MessageSchema(
+        subject=subject,
+        recipients=[recipient],
+        body=html,
+        subtype=MessageType.html,
+    )
+    await mailer.send_message(message)
