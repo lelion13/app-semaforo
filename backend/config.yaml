@@ -1,5 +1,6 @@
 sorteo:
   probabilidad_rojo: 30
+  max_rojos_dia: 5
 
 email:
   smtp_host: smtp-relay.brevo.com

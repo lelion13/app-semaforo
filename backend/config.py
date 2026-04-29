@@ -26,6 +26,7 @@ def _parse_frontend_urls() -> list[str]:
 @dataclass(frozen=True)
 class SorteoConfig:
     probabilidad_rojo: int
+    max_rojos_dia: int
 
 
 @dataclass(frozen=True)
@@ -97,9 +98,14 @@ def get_settings() -> Settings:
     if not smtp_password:
         raise ValueError("EMAIL_PASSWORD es requerido")
 
-    sorteo_cfg = SorteoConfig(probabilidad_rojo=int(yaml_config["sorteo"]["probabilidad_rojo"]))
+    sorteo_cfg = SorteoConfig(
+        probabilidad_rojo=int(yaml_config["sorteo"]["probabilidad_rojo"]),
+        max_rojos_dia=int(yaml_config["sorteo"].get("max_rojos_dia", 5)),
+    )
     if sorteo_cfg.probabilidad_rojo < 0 or sorteo_cfg.probabilidad_rojo > 100:
         raise ValueError("sorteo.probabilidad_rojo debe estar entre 0 y 100")
+    if sorteo_cfg.max_rojos_dia < 1:
+        raise ValueError("sorteo.max_rojos_dia debe ser mayor o igual a 1")
 
     email_cfg = EmailConfig(
         smtp_host=str(email_yaml["smtp_host"]),
