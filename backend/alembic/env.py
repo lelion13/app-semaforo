@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -16,8 +17,16 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
+def _resolve_sync_database_url() -> str:
+    # Alembic runs with a sync engine; convert asyncpg URL when DATABASE_URL is provided.
+    database_url = os.getenv("DATABASE_URL", "").strip() or config.get_main_option("sqlalchemy.url")
+    if database_url.startswith("postgresql+asyncpg://"):
+        return database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+    return database_url
+
+
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
+    url = _resolve_sync_database_url()
     context.configure(url=url, target_metadata=target_metadata, literal_binds=True, compare_type=True)
 
     with context.begin_transaction():
@@ -25,6 +34,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    config.set_main_option("sqlalchemy.url", _resolve_sync_database_url())
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

@@ -49,8 +49,11 @@ cp .env.prod.example .env.prod
 cd /docker/app-semaforo
 docker compose --env-file .env.prod -f docker-compose.prod.yml pull
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+docker compose --env-file .env.prod -f docker-compose.prod.yml exec backend alembic upgrade head
 docker compose --env-file .env.prod -f docker-compose.prod.yml ps
 ```
+
+Nota: el fix de Alembic convierte `postgresql+asyncpg://...` a URL sync solo para migraciones, por lo que `alembic upgrade head` ya funciona en producción.
 
 ## 5) Rollback rápido por tag
 
@@ -70,8 +73,19 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 3. Certificado TLS válido emitido por Traefik (Let’s Encrypt).
 4. Backend responde healthcheck interno (`/api/health`) sin reinicios constantes.
 5. Flujo de app básico operativo (login/consulta principal).
+6. La migración está aplicada: `docker compose ... exec backend alembic current`.
 
-## 7) Notas de compatibilidad con Traefik
+## 7) PWA instalable (modo app)
+
+La app ya está configurada como PWA instalable (`display: standalone`).
+
+- En Chrome/Edge Desktop: abrir `https://control.lionapp.cloud` y usar `Instalar app`.
+- En Android (Chrome): menú del navegador -> `Instalar app` o `Agregar a pantalla principal`.
+- En iOS (Safari): `Compartir` -> `Añadir a pantalla de inicio`.
+
+Esto no habilita modo offline completo; la instalación es para experiencia tipo app y acceso directo.
+
+## 8) Notas de compatibilidad con Traefik
 
 - No se modifica el proyecto `traefik-wpez`.
 - Se mantienen labels actuales en `frontend`:
