@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import FileResponse
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -105,3 +107,24 @@ async def resumen(
         select(func.count()).select_from(RegistroRojo).where(RegistroRojo.estado_control == "pendiente")
     )
     return DashboardResumenResponse(positivos_hoy=int(positivos_hoy or 0), pendientes=int(pendientes or 0))
+
+
+@router.get("/registros/{registro_id}/foto")
+async def get_registro_photo(
+    registro_id: str,
+    session: AsyncSession = Depends(get_db_session),
+    _: object = Depends(require_roles("admin", "rrhh")),
+) -> FileResponse:
+    registro = await session.scalar(select(RegistroRojo).where(RegistroRojo.id == registro_id))
+    if registro is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Registro no encontrado")
+    if not registro.foto_path:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto no disponible")
+
+    photo_path = Path(registro.foto_path)
+    if not photo_path.exists() or not photo_path.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archivo de foto no encontrado")
+
+    response = FileResponse(path=str(photo_path), media_type="image/jpeg", filename=f"{registro.sorteo_id}.jpg")
+    response.headers["Cache-Control"] = "no-store"
+    return response

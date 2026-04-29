@@ -5,6 +5,7 @@ import {
   createDashboardUser,
   getBootstrapStatus,
   getDashboardRegistros,
+  getDashboardRegistroPhotoUrl,
   getDashboardToken,
   patchDashboardRegistro,
   postBootstrapAdmin,
@@ -267,6 +268,8 @@ function DashboardPage() {
   const [message, setMessage] = useState("");
   const [registros, setRegistros] = useState<DashboardRegistro[]>([]);
   const [newUser, setNewUser] = useState({ nombre: "", apellido: "", email: "", rol: "rrhh" as "admin" | "rrhh" });
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoLoading, setPhotoLoading] = useState(false);
 
   const load = async () => {
     try {
@@ -362,6 +365,7 @@ function DashboardPage() {
               <th className="p-2">Estado</th>
               <th className="p-2">Email</th>
               <th className="p-2">Accion</th>
+              <th className="p-2">Foto</th>
             </tr>
           </thead>
           <tbody>
@@ -389,11 +393,55 @@ function DashboardPage() {
                     <option value="no_asistio">no_asistio</option>
                   </select>
                 </td>
+                <td className="p-2">
+                  <button
+                    className="rounded border px-2 py-1"
+                    onClick={async () => {
+                      setPhotoLoading(true);
+                      try {
+                        const url = await getDashboardRegistroPhotoUrl(item.id);
+                        setPhotoUrl((prev) => {
+                          if (prev) URL.revokeObjectURL(prev);
+                          return url;
+                        });
+                      } catch {
+                        setMessage("No se pudo cargar la foto.");
+                      } finally {
+                        setPhotoLoading(false);
+                      }
+                    }}
+                  >
+                    Ver foto
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {(photoLoading || photoUrl) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="max-h-[95vh] w-full max-w-3xl rounded bg-white p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Foto del evento</h2>
+              <button
+                className="rounded border px-2 py-1"
+                onClick={() => {
+                  if (photoUrl) URL.revokeObjectURL(photoUrl);
+                  setPhotoUrl(null);
+                  setPhotoLoading(false);
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+            <div className="flex min-h-[200px] items-center justify-center">
+              {photoLoading && <p className="text-sm text-slate-700">Cargando foto...</p>}
+              {!photoLoading && photoUrl && <img src={photoUrl} alt="Registro positivo" className="max-h-[80vh] w-auto rounded" />}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

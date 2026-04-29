@@ -147,3 +147,21 @@ export async function patchDashboardRegistro(
     body: JSON.stringify(payload)
   });
 }
+
+export async function getDashboardRegistroPhotoUrl(registroId: string): Promise<string> {
+  const token = getDashboardToken();
+  if (!token) {
+    throw new Error("Sesion expirada");
+  }
+  const response = await fetch(`${API_URL}/api/dashboard/registros/${registroId}/foto`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error("No se pudo obtener la foto");
+  }
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
+}
