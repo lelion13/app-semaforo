@@ -22,6 +22,10 @@ services:
       API_KEY: ${API_KEY}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
       FRONTEND_URLS: ${FRONTEND_URLS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      JWT_EXPIRES_MINUTES: ${JWT_EXPIRES_MINUTES}
+      APP_BASE_URL: ${APP_BASE_URL}
     depends_on:
       db:
         condition: service_healthy
