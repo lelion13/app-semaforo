@@ -10,27 +10,8 @@ permissions:
   packages: write
 
 jobs:
-  build-and-push:
+  build-and-push-backend:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: backend
-            context: ./backend
-            dockerfile: ./backend/Dockerfile
-            image: ghcr.io/lelion13/app-semaforo-backend
-            build_args: ""
-          - name: frontend
-            context: ./frontend
-            dockerfile: ./frontend/Dockerfile
-            image: ghcr.io/lelion13/app-semaforo-frontend
-            build_args: |
-              VITE_API_URL=${{ secrets.VITE_API_URL }}
-              VITE_API_KEY=${{ secrets.VITE_API_KEY }}
-              VITE_EMPRESA_NOMBRE=${{ secrets.VITE_EMPRESA_NOMBRE }}
-              VITE_EMPRESA_LOGO_URL=${{ secrets.VITE_EMPRESA_LOGO_URL }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,19 +33,62 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ matrix.image }}
+          images: ghcr.io/lelion13/app-semaforo-backend
           tags: |
             type=sha,format=short,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push ${{ matrix.name }}
+      - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: ${{ matrix.build_args }}
+
+  build-and-push-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/lelion13/app-semaforo-frontend
+          tags: |
+            type=sha,format=short,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_API_KEY=${{ secrets.VITE_API_KEY }}
+            VITE_EMPRESA_NOMBRE=${{ secrets.VITE_EMPRESA_NOMBRE }}
+            VITE_EMPRESA_LOGO_URL=${{ secrets.VITE_EMPRESA_LOGO_URL }}
