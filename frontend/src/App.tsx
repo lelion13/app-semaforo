@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Image, Loader2, LogOut, RefreshCcw, ShieldCheck, UserPlus } from "lucide-react";
 import {
   clearDashboardToken,
   confirmPassword,
@@ -18,6 +19,14 @@ import { ErrorCamara } from "./components/ErrorCamara";
 import { IdleScreen } from "./components/IdleScreen";
 import { ResultadoRojo } from "./components/ResultadoRojo";
 import { ResultadoVerde } from "./components/ResultadoVerde";
+import { Alert, AlertDescription } from "./components/ui/alert";
+import { Badge } from "./components/ui/badge";
+import { Button } from "./components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./components/ui/dialog";
+import { Input } from "./components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
 import { useCamera } from "./hooks/useCamera";
 import { clearPendingRojo, getPendingRojo, savePendingRojo, useSorteo } from "./hooks/useSorteo";
 import type { DashboardRegistro, UiState } from "./types";
@@ -281,6 +290,7 @@ function DashboardPage() {
   const [newUser, setNewUser] = useState({ nombre: "", apellido: "", email: "", rol: "rrhh" as "admin" | "rrhh" });
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoLoading, setPhotoLoading] = useState(false);
+  const isPhotoDialogOpen = photoLoading || Boolean(photoUrl);
 
   const load = async () => {
     try {
@@ -301,158 +311,218 @@ function DashboardPage() {
 
   if (!token) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-3 p-6">
-        <h1 className="text-2xl font-bold">Login dashboard</h1>
-        {message && <p className="text-sm text-slate-700">{message}</p>}
-        <input className="rounded border p-2" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className="rounded border p-2" type="password" placeholder="Clave" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button
-          className="rounded bg-slate-900 p-2 text-white"
-          onClick={async () => {
-            try {
-              const auth = await postLogin({ email, password });
-              saveDashboardToken(auth.access_token);
-              setToken(auth.access_token);
-            } catch {
-              setMessage("Credenciales invalidas.");
-            }
-          }}
-        >
-          Ingresar
-        </button>
+      <div className="mx-auto flex min-h-screen w-full max-w-md items-center p-4">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-2xl">Login dashboard</CardTitle>
+            <CardDescription>Accede para gestionar registros y usuarios.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {message && (
+              <Alert variant="destructive">
+                <AlertDescription>{message}</AlertDescription>
+              </Alert>
+            )}
+            <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input type="password" placeholder="Clave" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Button
+              className="w-full"
+              onClick={async () => {
+                try {
+                  const auth = await postLogin({ email, password });
+                  saveDashboardToken(auth.access_token);
+                  setToken(auth.access_token);
+                } catch {
+                  setMessage("Credenciales invalidas.");
+                }
+              }}
+            >
+              Ingresar
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold">Dashboard RRHH</h1>
-        <button className="rounded border px-3 py-1" onClick={() => void load()}>
-          Refrescar
-        </button>
-        <button
-          className="rounded border px-3 py-1"
-          onClick={() => {
-            clearDashboardToken();
-            setToken(null);
-          }}
-        >
-          Salir
-        </button>
-      </div>
-      {message && <p className="mb-2 text-sm text-slate-700">{message}</p>}
-
-      <div className="mb-4 grid gap-2 rounded border p-3 md:max-w-3xl md:grid-cols-5">
-        <input className="rounded border p-2" placeholder="Nombre" value={newUser.nombre} onChange={(e) => setNewUser((p) => ({ ...p, nombre: e.target.value }))} />
-        <input className="rounded border p-2" placeholder="Apellido" value={newUser.apellido} onChange={(e) => setNewUser((p) => ({ ...p, apellido: e.target.value }))} />
-        <input className="rounded border p-2" placeholder="Email" value={newUser.email} onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))} />
-        <select className="rounded border p-2" value={newUser.rol} onChange={(e) => setNewUser((p) => ({ ...p, rol: e.target.value as "admin" | "rrhh" }))}>
-          <option value="rrhh">rrhh</option>
-          <option value="admin">admin</option>
-        </select>
-        <button
-          className="rounded bg-slate-900 p-2 text-white"
-          onClick={async () => {
-            try {
-              await createDashboardUser(newUser);
-              setMessage("Usuario creado. Se envio enlace por email.");
-            } catch {
-              setMessage("No se pudo crear usuario.");
-            }
-          }}
-        >
-          Crear usuario
-        </button>
-      </div>
-
-      <div className="overflow-auto rounded border">
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="p-2">Fecha</th>
-              <th className="p-2">Legajo</th>
-              <th className="p-2">Nombre</th>
-              <th className="p-2">Estado</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Accion</th>
-              <th className="p-2">Foto</th>
-            </tr>
-          </thead>
-          <tbody>
-            {registros.map((item) => (
-              <tr key={item.id} className="border-t">
-                <td className="p-2">{new Date(item.fecha_hora).toLocaleString()}</td>
-                <td className="p-2">{item.legajo}</td>
-                <td className="p-2">
-                  {item.nombre} {item.apellido}
-                </td>
-                <td className="p-2">{item.estado_control}</td>
-                <td className="p-2">{item.email_enviado ? "ok" : "fallo"}</td>
-                <td className="p-2">
-                  <select
-                    className="rounded border p-1"
-                    value={item.estado_control}
-                    onChange={async (e) => {
-                      const estado = e.target.value as "pendiente" | "realizado" | "no_asistio";
-                      await patchDashboardRegistro(item.id, { estado_control: estado });
-                      await load();
-                    }}
-                  >
-                    <option value="pendiente">pendiente</option>
-                    <option value="realizado">realizado</option>
-                    <option value="no_asistio">no_asistio</option>
-                  </select>
-                </td>
-                <td className="p-2">
-                  <button
-                    className="rounded border px-2 py-1"
-                    onClick={async () => {
-                      setPhotoLoading(true);
-                      try {
-                        const url = await getDashboardRegistroPhotoUrl(item.id);
-                        setPhotoUrl((prev) => {
-                          if (prev) URL.revokeObjectURL(prev);
-                          return url;
-                        });
-                      } catch {
-                        setMessage("No se pudo cargar la foto.");
-                      } finally {
-                        setPhotoLoading(false);
-                      }
-                    }}
-                  >
-                    Ver foto
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {(photoLoading || photoUrl) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="max-h-[95vh] w-full max-w-3xl rounded bg-white p-3">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Foto del evento</h2>
-              <button
-                className="rounded border px-2 py-1"
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-6">
+        <Card>
+          <CardContent className="flex flex-col gap-4 pt-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-slate-700" />
+                <h1 className="text-2xl font-semibold">Dashboard RRHH</h1>
+              </div>
+              <p className="text-sm text-slate-600">Gestiona registros y seguimiento del control.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="secondary" onClick={() => void load()}>
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                Refrescar
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => {
-                  if (photoUrl) URL.revokeObjectURL(photoUrl);
-                  setPhotoUrl(null);
-                  setPhotoLoading(false);
+                  clearDashboardToken();
+                  setToken(null);
                 }}
               >
-                Cerrar
-              </button>
+                <LogOut className="mr-2 h-4 w-4" />
+                Salir
+              </Button>
             </div>
-            <div className="flex min-h-[200px] items-center justify-center">
-              {photoLoading && <p className="text-sm text-slate-700">Cargando foto...</p>}
-              {!photoLoading && photoUrl && <img src={photoUrl} alt="Registro positivo" className="max-h-[80vh] w-auto rounded" />}
-            </div>
+          </CardContent>
+        </Card>
+
+        {message && (
+          <Alert>
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Crear usuario</CardTitle>
+            <CardDescription>Enviar enlace para definir clave inicial.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+            <Input placeholder="Nombre" value={newUser.nombre} onChange={(e) => setNewUser((p) => ({ ...p, nombre: e.target.value }))} />
+            <Input placeholder="Apellido" value={newUser.apellido} onChange={(e) => setNewUser((p) => ({ ...p, apellido: e.target.value }))} />
+            <Input placeholder="Email" value={newUser.email} onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))} />
+            <Select value={newUser.rol} onValueChange={(value) => setNewUser((p) => ({ ...p, rol: value as "admin" | "rrhh" }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rrhh">rrhh</SelectItem>
+                <SelectItem value="admin">admin</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={async () => {
+                try {
+                  await createDashboardUser(newUser);
+                  setMessage("Usuario creado. Se envio enlace por email.");
+                } catch {
+                  setMessage("No se pudo crear usuario.");
+                }
+              }}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Crear usuario
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Registros</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Legajo</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Accion</TableHead>
+                  <TableHead>Foto</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {registros.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{new Date(item.fecha_hora).toLocaleString()}</TableCell>
+                    <TableCell>{item.legajo}</TableCell>
+                    <TableCell>
+                      {item.nombre} {item.apellido}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{item.estado_control}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={item.email_enviado ? "default" : "outline"}>{item.email_enviado ? "ok" : "fallo"}</Badge>
+                    </TableCell>
+                    <TableCell className="min-w-[170px]">
+                      <Select
+                        value={item.estado_control}
+                        onValueChange={async (value) => {
+                          const estado = value as "pendiente" | "realizado" | "no_asistio";
+                          await patchDashboardRegistro(item.id, { estado_control: estado });
+                          await load();
+                        }}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pendiente">pendiente</SelectItem>
+                          <SelectItem value="realizado">realizado</SelectItem>
+                          <SelectItem value="no_asistio">no_asistio</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          setPhotoLoading(true);
+                          try {
+                            const url = await getDashboardRegistroPhotoUrl(item.id);
+                            setPhotoUrl((prev) => {
+                              if (prev) URL.revokeObjectURL(prev);
+                              return url;
+                            });
+                          } catch {
+                            setMessage("No se pudo cargar la foto.");
+                          } finally {
+                            setPhotoLoading(false);
+                          }
+                        }}
+                      >
+                        <Image className="mr-2 h-4 w-4" />
+                        Ver foto
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Dialog
+        open={isPhotoDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            if (photoUrl) URL.revokeObjectURL(photoUrl);
+            setPhotoUrl(null);
+            setPhotoLoading(false);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Foto del evento</DialogTitle>
+            <DialogDescription>Visualizacion del registro seleccionado.</DialogDescription>
+          </DialogHeader>
+          <div className="flex min-h-[240px] items-center justify-center rounded-md border border-slate-200 bg-slate-50 p-4">
+            {photoLoading && (
+              <p className="flex items-center gap-2 text-sm text-slate-700">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Cargando foto...
+              </p>
+            )}
+            {!photoLoading && photoUrl && <img src={photoUrl} alt="Registro positivo" className="max-h-[80vh] w-auto rounded" />}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
