@@ -197,11 +197,22 @@ function SetupPage() {
         <button
           className="rounded bg-slate-900 p-2 text-white"
           onClick={async () => {
+            if (password.length < 10) {
+              setMessage("La clave debe tener al menos 10 caracteres.");
+              return;
+            }
             try {
               await confirmPassword(token, password);
               setMessage("Clave actualizada. Ya podes iniciar sesion.");
-            } catch {
-              setMessage("No se pudo actualizar la clave.");
+            } catch (error) {
+              const messageText = error instanceof Error ? error.message : "";
+              if (messageText.includes("at least 10 characters")) {
+                setMessage("La clave debe tener al menos 10 caracteres.");
+              } else if (messageText.includes("Token invalido o expirado")) {
+                setMessage("El enlace es invalido o expiro. Solicita uno nuevo.");
+              } else {
+                setMessage("No se pudo actualizar la clave.");
+              }
             }
           }}
         >
