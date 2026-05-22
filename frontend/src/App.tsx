@@ -87,7 +87,7 @@ function KioskApp() {
     if (uiState !== "VERDE") {
       return;
     }
-    const timeout = window.setTimeout(() => setUiState("IDLE"), 5000);
+    const timeout = window.setTimeout(() => setUiState("IDLE"), 3000);
     return () => window.clearTimeout(timeout);
   }, [uiState]);
 
