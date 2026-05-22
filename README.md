@@ -32,6 +32,12 @@ Aplicacion full-stack para sorteo de control antidrogas en tablet fija, con capt
 
 - `docker-compose.yml`: db + backend + frontend.
 
+- `openspec/`: especificaciones SDD (fuente de verdad) y carpeta de cambios futuros. Ver [openspec/README.md](openspec/README.md).
+
+- `docs/`: runbooks de deploy y documentación operativa.
+
+- `.atl/skill-registry.md`: registro de skills y convenciones para agentes.
+
 
 
 ## Configuracion backend

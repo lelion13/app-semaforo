@@ -1,5 +1,5 @@
 sorteo:
-  probabilidad_rojo: 30
+  probabilidad_rojo: 10
   max_rojos_dia: 5
 
 email:

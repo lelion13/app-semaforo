@@ -1,0 +1,39 @@
+schema: spec-driven
+
+context: |
+  Proyecto: app-semaforo (control antidrogas en tablet fija).
+  Stack: React + Vite + TypeScript + Tailwind (frontend); FastAPI + Pydantic + SQLAlchemy async + Alembic (backend); PostgreSQL 16.
+  Auth kiosk: X-API-Key en rutas /api/sorteo y /api/registro. Auth dashboard: JWT + bcrypt.
+  Deploy prod: GHCR + docker-compose.prod.yml + Traefik (TLS) en Hostinger VPS.
+  Dominio prod: https://control.lionapp.cloud
+  Testing: sin suite automatizada definida aún; verificación manual y healthchecks Docker.
+
+rules:
+  proposal:
+    - Incluir plan de rollback para cambios de sorteo, auth o migraciones DB
+    - Identificar si el cambio requiere rebuild de imagen backend, frontend o ambas
+    - Documentar impacto en variables VITE_* (build-time) vs runtime
+  specs:
+    - Usar escenarios Given/When/Then
+    - Usar palabras clave RFC 2119 (MUST, SHALL, SHOULD, MAY)
+    - Separar specs delta en openspec/changes/{change}/specs/; no editar main specs sin archive
+  design:
+    - Incluir diagramas de secuencia para flujos kiosk, sorteo y email
+    - Documentar decisiones de arquitectura con rationale
+  tasks:
+    - Agrupar por fase (spec, backend, frontend, migración, deploy, verificación)
+    - Numeración jerárquica (1.1, 1.2)
+    - Tareas completables en una sesión
+  apply:
+    - Seguir convenciones existentes en backend/routers, frontend/src y docs/
+    - No commitear secretos (.env, .env.prod, credenciales SMTP)
+    - Cambios en config.yaml del backend requieren rebuild/redeploy de imagen backend
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "cd frontend && npm run build"
+    coverage_threshold: 0
+  archive:
+    - Advertir antes de mergear deltas destructivos en openspec/specs/
+    - Conservar openspec/changes/archive/ como audit trail
