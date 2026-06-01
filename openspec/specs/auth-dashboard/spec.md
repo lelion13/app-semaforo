@@ -84,3 +84,30 @@ El middleware MUST NOT exigir API key en rutas de auth/dashboard protegidas por 
 - Ruta `/dashboard`: login si no hay token en almacenamiento local del cliente.
 - Token JWT guardado en cliente para llamadas API autenticadas.
 - UI: tabla de registros, filtros de estado, modal de foto, creación de usuarios (admin).
+- Componentes UI en `frontend/src/components/ui/*` (patrón shadcn + Tailwind).
+
+### Requirement: Acceso inicial y recuperación de contraseña
+
+El sistema MUST NOT proveer credenciales por defecto en `.env` ni en el repositorio.
+
+#### Scenario: Primer admin (bootstrap)
+
+- GIVEN `GET /api/auth/bootstrap-status` responde `needs_bootstrap: true`
+- WHEN el operador abre `https://control.lionapp.cloud/user`
+- THEN MUST poder crear el primer admin (email + contraseña bcrypt)
+- AND tras bootstrap, `needs_bootstrap` MUST ser `false`
+
+#### Scenario: Bootstrap ya realizado
+
+- GIVEN `needs_bootstrap: false`
+- WHEN se abre `/user`
+- THEN MUST mostrarse flujo de recuperación de contraseña por email (enlace de uso único, ~60 min)
+- AND el login operativo MUST ser en `/dashboard` con el email registrado en `usuarios_dashboard`
+
+#### Scenario: Consulta de usuarios en VPS
+
+- GIVEN olvido del email de admin
+- WHEN el operador ejecuta SQL en `usuarios_dashboard` (solo lectura de email/rol)
+- THEN MUST identificar el email de login sin exponer `password_hash`
+
+Documentación operativa: [docs/deploy-hostinger-ghcr.md](../../docs/deploy-hostinger-ghcr.md) sección 8.

@@ -10,7 +10,8 @@ email:
   remitente: "Leandro Lion <lelion13@gmail.com>"
   destinatarios:
     - llion@cpmgsa.ar
-    - llion@cpmgsa.com.ar
+    - controlausentismo@cpmgsa.com.ar
+    - seguridad@cpmgsa.com.ar
 
 empresa:
   nombre: "Clinica Monte Grande"

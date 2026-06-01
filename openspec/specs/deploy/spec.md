@@ -36,6 +36,31 @@ Push a `main` MUST disparar workflow `Docker Publish GHCR` que construye y publi
 - THEN MUST pasarlas como build-args al Dockerfile
 - AND el bundle MUST NOT lanzar error `Falta VITE_API_URL` en runtime
 
+#### Scenario: Build frontend con dependencias declaradas
+
+- GIVEN el código importa paquetes npm (p. ej. dashboard UI: Radix, `lucide-react`, `clsx`)
+- WHEN corre `npm run build` en CI (`tsc -b && vite build`)
+- THEN cada import MUST tener entrada correspondiente en `frontend/package.json`
+- AND MUST NOT asumirse que el Dockerfile instala deps no declaradas
+
+Dependencias runtime requeridas para dashboard UI (baseline 2026-05-22):
+
+| Paquete | Uso |
+|---------|-----|
+| `lucide-react` | Iconos en `App.tsx` / dashboard |
+| `class-variance-authority` | Variantes en componentes UI |
+| `clsx`, `tailwind-merge` | Utilidad `cn()` en `lib/utils.ts` |
+| `@radix-ui/react-slot` | `Button` |
+| `@radix-ui/react-dialog` | Modal de foto |
+| `@radix-ui/react-select` | Selects de rol y estado |
+
+#### Scenario: Fallo de CI solo en frontend
+
+- GIVEN el push modifica únicamente `backend/config.yaml`
+- WHEN el job backend publica imagen correctamente pero frontend falla
+- THEN MUST tratarse como fallo independiente del backend (p. ej. deps faltantes)
+- AND el operador MAY desplegar solo backend si el cambio no requiere frontend
+
 ### Requirement: Variables de entorno producción
 
 Archivo `.env.prod` en VPS (no commitear). Mínimo:

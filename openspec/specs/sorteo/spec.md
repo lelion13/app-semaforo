@@ -16,11 +16,11 @@ El sistema MUST generar un entero uniforme en `[0, 99]` usando `secrets.randbelo
 - AND MUST responder `{ "resultado": "rojo" | "verde", "sorteo_id": "<uuid-v4>" }`
 - AND MUST NOT persistir el resultado en base de datos en este paso
 
-#### Scenario: Probabilidad configurada al 30%
+#### Scenario: Probabilidad configurada al 10%
 
-- GIVEN `sorteo.probabilidad_rojo` es `30` en `backend/config.yaml`
+- GIVEN `sorteo.probabilidad_rojo` es `10` en `backend/config.yaml`
 - WHEN se ejecutan sorteos independientes bajo el cupo diario
-- THEN cada sorteo MUST tener probabilidad aproximada del 30% de resultado `rojo` y 70% de `verde`
+- THEN cada sorteo MUST tener probabilidad aproximada del 10% de resultado `rojo` y 90% de `verde`
 - AND los sorteos MUST ser estadísticamente independientes entre sí (sin memoria de resultados anteriores)
 
 ### Requirement: Tope diario de casos positivos registrados
@@ -58,7 +58,7 @@ Los parámetros de sorteo MUST leerse de `backend/config.yaml` al arrancar el ba
 
 | Clave | Default | Descripción |
 |-------|---------|-------------|
-| `sorteo.probabilidad_rojo` | — | Entero 0–100; umbral exclusivo superior para rojo |
+| `sorteo.probabilidad_rojo` | `10` (prod, 2026-05-22) | Entero 0–100; umbral exclusivo superior para rojo |
 | `sorteo.max_rojos_dia` | `5` | Máximo de registros rojos por día UTC antes de forzar verde |
 
 #### Scenario: Cambio de configuración
@@ -73,6 +73,7 @@ Los parámetros de sorteo MUST leerse de `backend/config.yaml` al arrancar el ba
 
 ## Notas operativas
 
-- Dos resultados `rojo` consecutivos con probabilidad 30% es esperable (~9% de ocurrencia en pares independientes).
+- Dos resultados `rojo` consecutivos con probabilidad 10% es esperable (~1% de ocurrencia en pares independientes).
 - El tope diario usa timezone UTC; en Argentina (UTC-3) el “día” del cupo puede no coincidir con el día local de operación.
 - Concurrencia extrema MAY permitir superar el cupo en una ventana muy corta (sin lock transaccional en sorteo).
+- Cambio archivado: `openspec/changes/archive/20260522-ajustar-probabilidad-sorteo/`.

@@ -31,8 +31,15 @@ El frontend MUST implementar los estados: `ERROR_CAMARA`, `IDLE`, `LOADING`, `VE
 
 - GIVEN estado IDLE y cámara lista
 - WHEN el empleado pulsa "Iniciar control" y el sorteo devuelve `verde`
-- THEN MUST mostrar pantalla verde con mensaje de buena jornada
-- AND MUST volver automáticamente a IDLE tras 5 segundos
+- THEN MUST mostrar pantalla verde con mensaje "¡Buena jornada!" (`ResultadoVerde`)
+- AND MUST volver automáticamente a IDLE tras **5000 ms** (constante en `frontend/src/App.tsx`, `useEffect` sobre estado `VERDE`)
+
+#### Scenario: Ajuste del tiempo en pantalla verde
+
+- GIVEN se requiere modificar la duración antes de volver al botón "Iniciar control"
+- WHEN se cambia el valor en milisegundos del `setTimeout` en `KioskApp` (`App.tsx`)
+- THEN MUST reconstruirse y redesplegarse la imagen **frontend** (build-time; no usa `config.yaml` del backend)
+- AND SHOULD usar una constante nombrada (p. ej. `VERDE_IDLE_MS`) en lugar de un literal suelto
 
 #### Scenario: Flujo rojo
 

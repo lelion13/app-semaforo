@@ -14,8 +14,9 @@ openspec/
 │   ├── email/
 │   ├── auth-dashboard/
 │   └── deploy/
-└── changes/             # Cambios activos (vacío hasta el primer change)
+└── changes/             # Cambios activos (vacío; ver archive/)
     └── archive/         # Cambios completados (audit trail)
+        └── README.md    # Índice de changes archivados
 ```
 
 ## Flujo recomendado para un cambio
@@ -32,9 +33,11 @@ openspec/
 ## Convenciones de este repo
 
 - **Positivo / rojo**: resultado de sorteo que exige control (pantalla roja + registro). No equivale a “verde / buena jornada”.
-- **Config de sorteo**: `backend/config.yaml` (embebido en imagen Docker backend).
+- **Config de sorteo**: `backend/config.yaml` — `probabilidad_rojo: 10`, `max_rojos_dia: 5` (embebido en imagen Docker backend).
+- **Pantalla verde (kiosk)**: timeout 5000 ms en `frontend/src/App.tsx`; requiere redeploy frontend si se modifica.
+- **Dashboard acceso**: bootstrap en `/user`; login en `/dashboard`; sin credenciales default en env.
 - **Secrets**: solo en `.env` / `.env.prod` / GitHub Secrets; nunca en specs ni commits.
-- **Frontend build-time**: `VITE_*` se inyecta en build (GitHub Actions o Docker build args).
+- **Frontend build-time**: `VITE_*` se inyecta en build (GitHub Actions o Docker build args). Toda dependencia importada MUST estar en `package.json`.
 
 ## Documentación operativa existente
 
@@ -42,7 +45,8 @@ openspec/
 - [docs/deploy-hostinger-ghcr.md](../docs/deploy-hostinger-ghcr.md) — deploy VPS + GHCR
 - [AGENTS.md](../../AGENTS.md) — acuerdos de colaboración con IA (stack, seguridad)
 
-## Estado inicial
+## Estado actual
 
-- Specs baseline generadas el 2026-05-22 a partir del código en `main`.
-- No hay cambios activos en `openspec/changes/` (listo para el primer change formal).
+- Specs baseline alineadas con producción al **2026-05-22**.
+- Changes archivados: ver [changes/archive/README.md](changes/archive/README.md).
+- No hay cambios activos en `openspec/changes/` (solo `archive/`).

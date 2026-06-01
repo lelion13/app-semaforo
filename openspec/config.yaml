@@ -6,7 +6,8 @@ context: |
   Auth kiosk: X-API-Key en rutas /api/sorteo y /api/registro. Auth dashboard: JWT + bcrypt.
   Deploy prod: GHCR + docker-compose.prod.yml + Traefik (TLS) en Hostinger VPS.
   Dominio prod: https://control.lionapp.cloud
-  Testing: sin suite automatizada definida aún; verificación manual y healthchecks Docker.
+  Probabilidad sorteo prod: 10% (config.yaml, desde 2026-05-22).
+  Testing: sin suite automatizada definida aún; verificación manual, healthchecks Docker y `npm run build` en frontend.
 
 rules:
   proposal:
