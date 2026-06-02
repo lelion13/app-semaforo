@@ -12,8 +12,8 @@ Tras `POST /api/registro` exitoso, el sistema MUST intentar enviar un email HTML
 
 - GIVEN un registro rojo recién creado
 - WHEN se envía el email
-- THEN el asunto MUST incluir legajo y fecha/hora (`Control requerido — Legajo {legajo} — dd/mm/yyyy HH:MM`)
-- AND el cuerpo HTML MUST incluir nombre completo, legajo, fecha/hora y texto de presentación al laboratorio
+- THEN el asunto MUST incluir legajo y fecha/hora en `zona_horaria` (`Control requerido — Legajo {legajo} — dd/mm/yyyy HH:MM`)
+- AND el cuerpo HTML MUST incluir nombre completo, legajo, fecha/hora local y texto de presentación al laboratorio
 - AND MUST adjuntar `{sorteo_id}.jpg` desde `fotos.directorio`
 - AND MUST enviar a todos los destinatarios en `email.destinatarios` de `config.yaml`
 

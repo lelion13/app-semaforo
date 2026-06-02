@@ -13,3 +13,4 @@ greenlet
 bcrypt
 PyJWT
 email-validator
+tzdata

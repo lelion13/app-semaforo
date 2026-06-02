@@ -8,6 +8,7 @@ from uuid import UUID
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 
 from config import get_settings
+from utils.day_bounds import format_in_timezone
 
 
 def _build_mailer() -> FastMail:
@@ -31,16 +32,18 @@ def _build_mailer() -> FastMail:
     return FastMail(conf)
 
 
-def _build_subject(legajo: str, fecha_hora: datetime) -> str:
-    return f"Control requerido - Legajo {legajo} - {fecha_hora.strftime('%d/%m/%Y %H:%M')}"
+def _build_subject(legajo: str, fecha_hora: datetime, tz_name: str) -> str:
+    when = format_in_timezone(fecha_hora, tz_name)
+    return f"Control requerido - Legajo {legajo} - {when}"
 
 
-def _build_html(nombre_completo: str, legajo: str, fecha_hora: datetime) -> str:
+def _build_html(nombre_completo: str, legajo: str, fecha_hora: datetime, tz_name: str) -> str:
+    when = format_in_timezone(fecha_hora, tz_name)
     return (
         "<h3>Control antidrogas</h3>"
         f"<p><b>Nombre completo:</b> {nombre_completo}</p>"
         f"<p><b>Legajo:</b> {legajo}</p>"
-        f"<p><b>Fecha y hora:</b> {fecha_hora.strftime('%d/%m/%Y %H:%M')}</p>"
+        f"<p><b>Fecha y hora:</b> {when}</p>"
         "<p>El empleado debe presentarse al laboratorio.</p>"
     )
 
@@ -56,8 +59,8 @@ async def send_registro_email(
 ) -> None:
     settings = get_settings()
     mailer = _build_mailer()
-    subject = _build_subject(legajo, fecha_hora)
-    html = _build_html(f"{nombre} {apellido}", legajo, fecha_hora)
+    subject = _build_subject(legajo, fecha_hora, settings.zona_horaria)
+    html = _build_html(f"{nombre} {apellido}", legajo, fecha_hora, settings.zona_horaria)
     attachment_path = Path(foto_path)
     if not attachment_path.exists():
         raise FileNotFoundError(f"No existe foto para sorteo {sorteo_id}")

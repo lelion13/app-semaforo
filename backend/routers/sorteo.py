@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
 import secrets
 import uuid
 
@@ -12,6 +11,7 @@ from config import get_settings
 from database import get_db_session
 from models import RegistroRojo
 from schemas import SorteoResponse
+from utils.day_bounds import utc_range_for_local_calendar_day
 
 router = APIRouter(prefix="/api", tags=["sorteo"])
 
@@ -19,9 +19,7 @@ router = APIRouter(prefix="/api", tags=["sorteo"])
 @router.post("/sorteo", response_model=SorteoResponse)
 async def crear_sorteo(session: AsyncSession = Depends(get_db_session)) -> SorteoResponse:
     settings = get_settings()
-    now = datetime.now(timezone.utc)
-    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    day_end = day_start + timedelta(days=1)
+    day_start, day_end = utc_range_for_local_calendar_day(settings.zona_horaria)
 
     rojos_hoy = await session.scalar(
         select(func.count())

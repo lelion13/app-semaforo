@@ -1,3 +1,6 @@
+# Calendario operativo (cupo diario, resumen dashboard, horas en emails de alerta)
+zona_horaria: America/Argentina/Buenos_Aires
+
 sorteo:
   probabilidad_rojo: 10
   max_rojos_dia: 5

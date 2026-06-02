@@ -72,7 +72,7 @@ El middleware MUST NOT exigir API key en rutas de auth/dashboard protegidas por 
 
 ### Requirement: Resumen dashboard
 
-`GET /api/dashboard/resumen` MUST devolver conteos de `positivos_hoy` (registros del día UTC) y `pendientes` (`estado_control=pendiente`).
+`GET /api/dashboard/resumen` MUST devolver conteos de `positivos_hoy` (registros del día en `zona_horaria`, misma lógica que el cupo de sorteo) y `pendientes` (`estado_control=pendiente`).
 
 ### Requirement: Seguridad de tokens y secretos
 

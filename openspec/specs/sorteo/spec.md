@@ -10,7 +10,7 @@ El sistema MUST generar un entero uniforme en `[0, 99]` usando `secrets.randbelo
 
 #### Scenario: Sorteo dentro del cupo diario
 
-- GIVEN el conteo de registros rojos del día calendario UTC es menor que `sorteo.max_rojos_dia`
+- GIVEN el conteo de registros rojos del día calendario en `zona_horaria` es menor que `sorteo.max_rojos_dia`
 - WHEN un cliente autenticado con `X-API-Key` invoca `POST /api/sorteo`
 - THEN el backend MUST evaluar `numero < sorteo.probabilidad_rojo`
 - AND MUST responder `{ "resultado": "rojo" | "verde", "sorteo_id": "<uuid-v4>" }`
@@ -29,7 +29,7 @@ El sistema MUST forzar resultado `verde` cuando ya se alcanzó el cupo diario de
 
 #### Scenario: Cupo diario alcanzado
 
-- GIVEN existen `N` filas en `registros_rojos` con `fecha_hora` dentro del día calendario UTC actual
+- GIVEN existen `N` filas en `registros_rojos` con `fecha_hora` dentro del día calendario en `zona_horaria` actual
 - AND `N >= sorteo.max_rojos_dia` (default `5`)
 - WHEN se invoca `POST /api/sorteo`
 - THEN el backend MUST responder `resultado: "verde"` sin aplicar aleatoriedad
@@ -37,7 +37,7 @@ El sistema MUST forzar resultado `verde` cuando ya se alcanzó el cupo diario de
 
 #### Scenario: Cupo diario no alcanzado
 
-- GIVEN existen menos de `max_rojos_dia` registros rojos completados hoy (UTC)
+- GIVEN existen menos de `max_rojos_dia` registros rojos completados hoy (`zona_horaria`)
 - WHEN se invoca `POST /api/sorteo`
 - THEN el sistema MUST aplicar la probabilidad configurada normalmente
 
@@ -58,8 +58,9 @@ Los parámetros de sorteo MUST leerse de `backend/config.yaml` al arrancar el ba
 
 | Clave | Default | Descripción |
 |-------|---------|-------------|
+| `zona_horaria` | `America/Argentina/Buenos_Aires` | IANA TZ para cupo diario y conteos; override con `APP_TIMEZONE` |
 | `sorteo.probabilidad_rojo` | `10` (prod, 2026-05-22) | Entero 0–100; umbral exclusivo superior para rojo |
-| `sorteo.max_rojos_dia` | `5` | Máximo de registros rojos por día UTC antes de forzar verde |
+| `sorteo.max_rojos_dia` | `5` | Máximo de registros rojos por día local antes de forzar verde |
 
 #### Scenario: Cambio de configuración
 
@@ -74,6 +75,6 @@ Los parámetros de sorteo MUST leerse de `backend/config.yaml` al arrancar el ba
 ## Notas operativas
 
 - Dos resultados `rojo` consecutivos con probabilidad 10% es esperable (~1% de ocurrencia en pares independientes).
-- El tope diario usa timezone UTC; en Argentina (UTC-3) el “día” del cupo puede no coincidir con el día local de operación.
+- `fecha_hora` se persiste en UTC; el cupo diario convierte medianoche local a rango `[start, end)` UTC vía `utils/day_bounds.py`.
 - Concurrencia extrema MAY permitir superar el cupo en una ventana muy corta (sin lock transaccional en sorteo).
 - Cambio archivado: `openspec/changes/archive/20260522-ajustar-probabilidad-sorteo/`.

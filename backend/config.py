@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import yaml
 
@@ -61,6 +62,7 @@ class Settings:
     database_url: str
     api_key: str
     frontend_urls: list[str]
+    zona_horaria: str
     sorteo: SorteoConfig
     email: EmailConfig
     empresa: EmpresaConfig
@@ -123,6 +125,14 @@ def get_settings() -> Settings:
     if sorteo_cfg.max_rojos_dia < 1:
         raise ValueError("sorteo.max_rojos_dia debe ser mayor o igual a 1")
 
+    zona_horaria = os.getenv("APP_TIMEZONE", "").strip() or str(
+        yaml_config.get("zona_horaria", "America/Argentina/Buenos_Aires")
+    )
+    try:
+        ZoneInfo(zona_horaria)
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"zona_horaria invalida: {zona_horaria}") from exc
+
     email_cfg = EmailConfig(
         smtp_host=str(email_yaml["smtp_host"]),
         smtp_port=int(email_yaml["smtp_port"]),
@@ -153,6 +163,7 @@ def get_settings() -> Settings:
         database_url=database_url,
         api_key=api_key,
         frontend_urls=frontend_urls,
+        zona_horaria=zona_horaria,
         sorteo=sorteo_cfg,
         email=email_cfg,
         empresa=empresa_cfg,

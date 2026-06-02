@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -8,10 +8,12 @@ from fastapi.responses import FileResponse
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import get_settings
 from database import get_db_session
 from models import RegistroRojo
 from schemas import DashboardRegistroResponse, DashboardResumenResponse, UpdateDashboardRegistroRequest
 from security import require_roles
+from utils.day_bounds import utc_range_for_local_calendar_day
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -95,9 +97,8 @@ async def resumen(
     session: AsyncSession = Depends(get_db_session),
     _: object = Depends(require_roles("admin", "rrhh")),
 ) -> DashboardResumenResponse:
-    now = datetime.now(timezone.utc)
-    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    day_end = day_start + timedelta(days=1)
+    settings = get_settings()
+    day_start, day_end = utc_range_for_local_calendar_day(settings.zona_horaria)
     positivos_hoy = await session.scalar(
         select(func.count())
         .select_from(RegistroRojo)

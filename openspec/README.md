@@ -33,7 +33,7 @@ openspec/
 ## Convenciones de este repo
 
 - **Positivo / rojo**: resultado de sorteo que exige control (pantalla roja + registro). No equivale a “verde / buena jornada”.
-- **Config de sorteo**: `backend/config.yaml` — `probabilidad_rojo: 10`, `max_rojos_dia: 5` (embebido en imagen Docker backend).
+- **Config de sorteo**: `backend/config.yaml` — `zona_horaria`, `probabilidad_rojo: 10`, `max_rojos_dia: 5` (embebido en imagen Docker backend; cupo diario por día local ART).
 - **Pantalla verde (kiosk)**: timeout 5000 ms en `frontend/src/App.tsx`; requiere redeploy frontend si se modifica.
 - **Dashboard acceso**: bootstrap en `/user`; login en `/dashboard`; sin credenciales default en env.
 - **Secrets**: solo en `.env` / `.env.prod` / GitHub Secrets; nunca en specs ni commits.
