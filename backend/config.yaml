@@ -2,7 +2,7 @@
 zona_horaria: America/Argentina/Buenos_Aires
 
 sorteo:
-  probabilidad_rojo: 1
+  probabilidad_rojo: 4
   max_rojos_dia: 5
 
 email:
